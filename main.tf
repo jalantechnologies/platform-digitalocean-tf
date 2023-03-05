@@ -2,7 +2,7 @@ terraform {
   cloud {
     organization = "jalantechnologies"
     workspaces {
-      name = "boilerplate-mern-01"
+      name = "platform-do-cluster-tf"
     }
   }
 }
