@@ -21,11 +21,6 @@ variable "do_cluster_node_size" {
   default     = "s-2vcpu-4gb"
 }
 
-variable "do_cluster_node_scale_max_size" {
-  description = "Represents the maximum number of nodes that the node pool can be scaled up to"
-  default     = 2
-}
-
 variable "do_alert_email" {
   description = "Email address to be used for sending resource utilization alerts"
 }
@@ -40,7 +35,7 @@ resource "digitalocean_kubernetes_cluster" "do_cluster" {
     size       = var.do_cluster_node_size
     auto_scale = true
     min_nodes  = 1
-    max_nodes  = var.do_cluster_node_scale_max_size
+    max_nodes  = 2
     tags       = [
       "${var.do_cluster_name}-worker"
     ]
@@ -99,4 +94,8 @@ output "do_cluster_host" {
 
 output "do_cluster_token" {
   value = digitalocean_kubernetes_cluster.do_cluster.kube_config.0.token
+}
+
+output "do_cluster_default_node_id" {
+  value = digitalocean_kubernetes_cluster.do_cluster.node_pool[0].nodes[0].id
 }

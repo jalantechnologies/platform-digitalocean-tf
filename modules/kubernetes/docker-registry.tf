@@ -7,6 +7,10 @@ variable "docker_registry_auth_user" {
   default     = "docker_user"
 }
 
+variable "docker_registry_node_id" {
+  description = "Node where docker registry will be deployed"
+}
+
 # from https://github.com/hashicorp/terraform-provider-random/issues/102#issuecomment-698605852
 # important - this generates a random password based on inputs provided here,
 # null_resource.encrypted_admin_password will have to be tainted in order to rotate the password
@@ -39,6 +43,7 @@ resource "helm_release" "docker_registry" {
       docker_registry        = var.docker_registry_host
       docker_username        = var.docker_registry_auth_user
       docker_hashed_password = null_resource.encrypted_admin_password.triggers["pwd_hashed"]
+      docker_node_id         = var.docker_registry_node_id
     })
   ]
 }
