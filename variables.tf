@@ -13,7 +13,3 @@ variable "do_token" {
 variable "do_alert_email" {
   description = "Email address to be used for sending resource utilization alerts"
 }
-
-variable "docker_registry_host" {
-  description = "URL via which registry can be accessed"
-}

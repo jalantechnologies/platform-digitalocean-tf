@@ -40,16 +40,13 @@ provider "kubectl" {
 
 module "digital_ocean" {
   source          = "./modules/digital-ocean"
-  #  do_token        = var.do_token
   do_cluster_name = var.do_cluster_name
   do_alert_email  = var.do_alert_email
 }
 
 module "kubernetes" {
-  depends_on              = [module.digital_ocean]
-  source                  = "./modules/kubernetes"
-  cluster_issuer_email    = var.cluster_issuer_email
-  cluster_issuer_name     = "letsencrypt-prod"
-  docker_registry_host    = var.docker_registry_host
-  docker_registry_node_id = module.digital_ocean.do_cluster_default_node_id
+  depends_on           = [module.digital_ocean]
+  source               = "./modules/kubernetes"
+  cluster_issuer_email = var.cluster_issuer_email
+  cluster_issuer_name  = "letsencrypt-prod"
 }
