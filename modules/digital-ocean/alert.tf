@@ -13,7 +13,7 @@ resource "digitalocean_monitor_alert" "cpu_alert" {
   compare     = "GreaterThan"
   value       = 90
   enabled     = true
-  tags        = digitalocean_kubernetes_cluster.do_cluster.node_pool[0].tags
+  tags        = ["k8s:worker"]
   description = "CPU is running high on K8 workers"
 }
 
@@ -28,6 +28,6 @@ resource "digitalocean_monitor_alert" "memory_alert" {
   compare     = "GreaterThan"
   value       = 90
   enabled     = true
-  tags        = digitalocean_kubernetes_cluster.do_cluster.node_pool[0].tags
+  tags        = ["k8s:worker"]
   description = "Memory Utilization is running high on K8 workers"
 }
