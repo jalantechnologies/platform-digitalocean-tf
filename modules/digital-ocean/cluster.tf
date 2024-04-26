@@ -33,6 +33,14 @@ resource "digitalocean_kubernetes_cluster" "do_cluster" {
     min_nodes  = 1
     max_nodes  = 2
   }
+
+  lifecycle {
+    ignore_changes = [
+      node_pool[0].auto_scale,
+      node_pool[0].min_nodes,
+      node_pool[0].max_nodes
+    ]
+  }
 }
 
 resource "digitalocean_kubernetes_node_pool" "do_cluster_staging_pool" {
@@ -42,6 +50,14 @@ resource "digitalocean_kubernetes_node_pool" "do_cluster_staging_pool" {
   auto_scale = true
   min_nodes  = 1
   max_nodes  = 2
+
+  lifecycle {
+    ignore_changes = [
+      auto_scale,
+      min_nodes,
+      max_nodes,
+    ]
+  }
 }
 
 output "do_cluster_id" {
