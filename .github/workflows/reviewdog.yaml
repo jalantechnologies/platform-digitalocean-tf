@@ -1,7 +1,7 @@
 name: reviewdog
 on: [ pull_request ]
 jobs:
-  reviewdog:
+  format:
     name: reviewdog
     runs-on: ubuntu-latest
     steps:
