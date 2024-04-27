@@ -1,0 +1,14 @@
+name: reviewdog
+on: [ pull_request ]
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+      - run: |
+          terraform fmt -recursive
+      - name: suggester / terraform fmt
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: terraform fmt

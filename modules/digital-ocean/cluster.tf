@@ -12,7 +12,7 @@ variable "do_cluster_region" {
 variable "do_cluster_version" {
   # list is available at https://slugs.do-api.dev/ on "Kubernetes Versions"
   description = "The slug identifier for the version of Kubernetes used for the cluster"
-  default     = "1.25.4-do.0"
+  default     = "1.27.10-do.0"
 }
 
 variable "do_cluster_node_size" {
@@ -27,13 +27,35 @@ resource "digitalocean_kubernetes_cluster" "do_cluster" {
   version = var.do_cluster_version
 
   node_pool {
-    name       = "${var.do_cluster_name}-default-pool"
+    name       = "${var.do_cluster_name}-production-pool"
     size       = var.do_cluster_node_size
     auto_scale = true
     min_nodes  = 1
     max_nodes  = 2
-    tags       = [
-      "${var.do_cluster_name}-worker"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      node_pool[0].auto_scale,
+      node_pool[0].min_nodes,
+      node_pool[0].max_nodes
+    ]
+  }
+}
+
+resource "digitalocean_kubernetes_node_pool" "do_cluster_staging_pool" {
+  name       = "${var.do_cluster_name}-staging-pool"
+  cluster_id = digitalocean_kubernetes_cluster.do_cluster.id
+  size       = var.do_cluster_node_size
+  auto_scale = true
+  min_nodes  = 1
+  max_nodes  = 2
+
+  lifecycle {
+    ignore_changes = [
+      auto_scale,
+      min_nodes,
+      max_nodes,
     ]
   }
 }
