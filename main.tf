@@ -39,9 +39,10 @@ provider "kubectl" {
 }
 
 module "digital_ocean" {
-  source          = "./modules/digital-ocean"
-  do_cluster_name = var.do_cluster_name
-  do_alert_email  = var.do_alert_email
+  source             = "./modules/digital-ocean"
+  do_cluster_name    = var.do_cluster_name
+  do_alert_email     = var.do_alert_email
+  do_cluster_version = var.do_cluster_version
 }
 
 module "kubernetes" {

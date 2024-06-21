@@ -2,17 +2,15 @@ variable "do_cluster_name" {
   description = "Kubernetes cluster name on DigitalOcean"
 }
 
+variable "do_cluster_version" {
+  description = "The slug identifier for the version of Kubernetes used for the cluster"
+}
+
 variable "do_cluster_region" {
   # list is available at https://slugs.do-api.dev/ on "Regions"
   # default is - New York 1
   description = "The slug identifier for the region where the Kubernetes cluster will be created"
   default     = "nyc1"
-}
-
-variable "do_cluster_version" {
-  # list is available at https://slugs.do-api.dev/ on "Kubernetes Versions"
-  description = "The slug identifier for the version of Kubernetes used for the cluster"
-  default     = "1.27.10-do.0"
 }
 
 variable "do_cluster_node_size" {
