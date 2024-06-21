@@ -13,3 +13,8 @@ variable "do_token" {
 variable "do_alert_email" {
   description = "Email address to be used for sending resource utilization alerts"
 }
+
+variable "do_cluster_version" {
+  # list is available at https://slugs.do-api.dev/ on "Kubernetes Versions"
+  description = "The slug identifier for the version of Kubernetes used for the cluster"
+}
