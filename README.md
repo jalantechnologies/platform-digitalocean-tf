@@ -1,6 +1,6 @@
-# Terraform Plans
+# Terraform - DigitalOcean
 
-This project contains terraform plans for resources owned by Platform team.
+This project is a template for setting up Kubernetes cluster on DigitalOcean.
 
 ## Steps
 
