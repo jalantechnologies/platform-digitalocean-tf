@@ -1,0 +1,122 @@
+name: Disable Preview Pool
+
+on:
+  repository_dispatch:
+    types: [disable-preview-pool]
+  workflow_dispatch:
+
+# Prevent concurrent runs with preview pool operations to avoid state conflicts
+concurrency:
+  group: terraform-preview-pool-operations
+  cancel-in-progress: false
+
+jobs:
+  disable-preview-pool:
+    name: Disable Preview Pool
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_wrapper: false  # Disable wrapper for better error handling
+        
+    - name: Terraform Init
+      run: |
+        echo " Initializing Terraform..."
+        terraform init
+        echo " Terraform initialization completed"
+        
+    - name: Terraform Validate
+      run: |
+        echo " Validating Terraform configuration..."
+        terraform validate
+        echo " Terraform configuration is valid"
+      
+    - name: Check Current Preview Pool State
+      id: current-state
+      run: |
+        echo " Checking current preview pool state..."
+        set +e  # Don't exit on error
+        
+        echo " Fetching current Terraform state..."
+        if terraform state list > state_resources.txt 2>/dev/null; then
+          echo " Successfully retrieved Terraform state"
+        else
+          echo " Could not retrieve Terraform state - assuming no resources exist"
+          touch state_resources.txt  # Create empty file for consistent processing
+        fi
+        
+        if grep -q "module.digital_ocean.digitalocean_kubernetes_node_pool.do_cluster_staging_pool" state_resources.txt; then
+          echo " Preview pool found in state - proceeding with disable"
+          echo "pool-exists=true" >> $GITHUB_OUTPUT
+        else
+          echo " Preview pool not found in state - already disabled"
+          echo "pool-exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Terraform Plan - Disable Preview Pool
+      if: steps.current-state.outputs.pool-exists == 'true'
+      run: |
+        echo " Terraform plan to disable preview pool:"
+        terraform plan -var="enable_preview_pool=false" -no-color
+      
+    - name: Terraform Apply - Disable Preview Pool
+      if: steps.current-state.outputs.pool-exists == 'true'
+      run: |
+        echo " Disabling preview pool..."
+        echo " This will save ~$14/month in costs"
+        
+        terraform apply -auto-approve -var="enable_preview_pool=false"
+        
+        if [ $? -eq 0 ]; then
+          echo " Preview pool successfully disabled"
+          echo " Cost savings activated - preview resources destroyed"
+        else
+          echo " Failed to disable preview pool"
+          exit 1
+        fi
+      
+    - name: Already Disabled
+      if: steps.current-state.outputs.pool-exists == 'false'
+      run: |
+        echo " Preview pool is already disabled - no action needed"
+        echo " Cost optimization is already active"
+        
+    - name: Cleanup Temporary Files
+      if: always()
+      run: |
+        echo " Cleaning up temporary files..."
+        rm -f state_resources.txt || true
+        echo " Cleanup completed"
+        
+    - name: Workflow Summary
+      if: always()
+      run: |
+        echo "##  Disable Preview Pool Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Pool existed**: ${{ steps.current-state.outputs.pool-exists }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Workflow status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ steps.current-state.outputs.pool-exists }}" == "true" ] && [ "${{ job.status }}" == "success" ]; then
+          echo "- **Action taken**:  Successfully disabled preview pool (saving ~$14/month)" >> $GITHUB_STEP_SUMMARY
+        elif [ "${{ steps.current-state.outputs.pool-exists }}" == "false" ]; then
+          echo "- **Action taken**:  No action needed - pool already disabled" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Action taken**: Failed to disable preview pool" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+    - name: Notify Success
+      if: success() && steps.current-state.outputs.pool-exists == 'true'
+      run: |
+        echo " Preview pool has been successfully disabled"
+        echo " Cost savings: ~$14/month"
+        
+    - name: Notify Failure
+      if: failure()
+      run: |
+        echo " Failed to disable preview pool"
+        echo "Please check the logs and try again"

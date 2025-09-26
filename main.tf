@@ -2,7 +2,7 @@ terraform {
   cloud {
     organization = "jalantechnologies"
     workspaces {
-      name = "platform-do-cluster-tf"
+      name = "platform-digitalocean-tf"
     }
   }
 }
@@ -39,10 +39,12 @@ provider "kubectl" {
 }
 
 module "digital_ocean" {
-  source             = "./modules/digital-ocean"
-  do_cluster_name    = var.do_cluster_name
-  do_alert_email     = var.do_alert_email
-  do_cluster_version = var.do_cluster_version
+  source               = "./modules/digital-ocean"
+  do_cluster_name      = var.do_cluster_name
+  do_alert_email       = var.do_alert_email
+  do_cluster_version   = var.do_cluster_version
+  enable_preview_pool  = var.enable_preview_pool
+  preview_node_size    = var.preview_node_size
 }
 
 module "kubernetes" {

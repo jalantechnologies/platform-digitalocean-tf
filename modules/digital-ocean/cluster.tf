@@ -19,6 +19,18 @@ variable "do_cluster_node_size" {
   default     = "s-2vcpu-4gb"
 }
 
+variable "enable_preview_pool" {
+  description = "Whether to enable the preview node pool for PR environments"
+  type        = bool
+  default     = false
+}
+
+variable "preview_node_size" {
+  description = "The slug identifier for the type of Droplet to be used in the preview node pool"
+  type        = string
+  default     = "s-2vcpu-4gb"
+}
+
 resource "digitalocean_kubernetes_cluster" "do_cluster" {
   name    = var.do_cluster_name
   region  = var.do_cluster_region
@@ -42,9 +54,10 @@ resource "digitalocean_kubernetes_cluster" "do_cluster" {
 }
 
 resource "digitalocean_kubernetes_node_pool" "do_cluster_staging_pool" {
+  count      = var.enable_preview_pool ? 1 : 0
   name       = "${var.do_cluster_name}-staging-pool"
   cluster_id = digitalocean_kubernetes_cluster.do_cluster.id
-  size       = var.do_cluster_node_size
+  size       = var.preview_node_size
   auto_scale = true
   min_nodes  = 1
   max_nodes  = 2

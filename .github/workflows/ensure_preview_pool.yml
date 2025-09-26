@@ -1,0 +1,144 @@
+name: Ensure Preview Pool
+
+on:
+  repository_dispatch:
+    types: [ensure-preview-pool]
+  workflow_dispatch:
+
+# Prevent concurrent runs with any preview pool operations to avoid state conflicts
+concurrency:
+  group: terraform-preview-pool-operations
+  cancel-in-progress: false
+
+jobs:
+  ensure-preview-pool:
+    name: Enable Preview Pool
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        terraform_wrapper: false  # Disable wrapper for better error handling
+        
+    - name: Terraform Init
+      run: |
+        echo " Initializing Terraform..."
+        terraform init
+        echo " Terraform initialization completed"
+        
+    - name: Terraform Validate
+      run: |
+        echo " Validating Terraform configuration..."
+        terraform validate
+        echo " Terraform configuration is valid"
+      
+    - name: Check Current Preview Pool State
+      id: current-state
+      run: |
+        echo " Checking current preview pool state..."
+        set +e  # Don't exit on error
+        
+        echo " Fetching current Terraform state..."
+        if terraform state list > state_resources.txt 2>/dev/null; then
+          echo " Successfully retrieved Terraform state"
+        else
+          echo " Could not retrieve Terraform state - assuming no resources exist"
+          touch state_resources.txt  # Create empty file for consistent processing
+        fi
+        
+        if grep -q "module.digital_ocean.digitalocean_kubernetes_node_pool.do_cluster_staging_pool" state_resources.txt; then
+          echo " Preview pool found in state - checking if already enabled"
+          
+          # Get resource details to check if it's actually running
+          RESOURCE_NAME=$(grep "module.digital_ocean.digitalocean_kubernetes_node_pool.do_cluster_staging_pool" state_resources.txt | head -1)
+          echo " Getting detailed resource information..."
+          if terraform state show "$RESOURCE_NAME" > pool_details.txt 2>/dev/null; then
+            echo " Successfully retrieved resource details"
+          else
+            echo " Could not retrieve resource details - assuming resource needs attention"
+            touch pool_details.txt  # Create empty file for consistent processing
+          fi
+          
+          if [ -s pool_details.txt ]; then
+            NODE_COUNT=$(grep -E "actual_node_count\s*=" pool_details.txt | head -1 | sed 's/.*= //' | sed 's/[^0-9]//g')
+            if [[ "$NODE_COUNT" -gt 0 ]]; then
+              echo " Preview pool is already enabled with $NODE_COUNT nodes"
+              echo "pool-enabled=true" >> $GITHUB_OUTPUT
+            else
+              echo " Preview pool exists but has 0 nodes - needs enabling"
+              echo "pool-enabled=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "pool-enabled=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo " Preview pool not found in state - needs creation"
+          echo "pool-enabled=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Terraform Plan - Enable Preview Pool
+      if: steps.current-state.outputs.pool-enabled == 'false'
+      run: |
+        echo " Terraform plan to enable preview pool:"
+        terraform plan -var="enable_preview_pool=true" -no-color
+      
+    - name: Terraform Apply - Enable Preview Pool
+      if: steps.current-state.outputs.pool-enabled == 'false'
+      run: |
+        echo " Enabling preview pool..."
+        echo " This will incur ~$14/month in costs"
+        
+        terraform apply -auto-approve -var="enable_preview_pool=true"
+        
+        if [ $? -eq 0 ]; then
+          echo " Preview pool successfully enabled"
+          echo " Preview environment is now available for PR testing"
+        else
+          echo " Failed to enable preview pool"
+          exit 1
+        fi
+      
+    - name: Already Enabled
+      if: steps.current-state.outputs.pool-enabled == 'true'
+      run: |
+        echo " Preview pool is already enabled - no action needed"
+        echo " Preview environment is ready for development"
+        
+    - name: Cleanup Temporary Files
+      if: always()
+      run: |
+        echo " Cleaning up temporary files..."
+        rm -f state_resources.txt pool_details.txt || true
+        echo " Cleanup completed"
+        
+    - name: Workflow Summary
+      if: always()
+      run: |
+        echo "##  Ensure Preview Pool Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Pool was enabled**: ${{ steps.current-state.outputs.pool-enabled }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Workflow status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ steps.current-state.outputs.pool-enabled }}" == "false" ] && [ "${{ job.status }}" == "success" ]; then
+          echo "- **Action taken**:  Successfully enabled preview pool (~$14/month cost)" >> $GITHUB_STEP_SUMMARY
+        elif [ "${{ steps.current-state.outputs.pool-enabled }}" == "true" ]; then
+          echo "- **Action taken**:  No action needed - pool already enabled" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Action taken**:  Failed to enable preview pool" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+    - name: Notify Success
+      if: success() && steps.current-state.outputs.pool-enabled == 'false'
+      run: |
+        echo " Preview pool has been successfully enabled"
+        echo "Preview pool will be available in a few minutes"
+        
+    - name: Notify Failure
+      if: failure()
+      run: |
+        echo " Failed to enable preview pool"
+        echo "Please check the logs and try again"
