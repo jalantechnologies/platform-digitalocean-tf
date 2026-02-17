@@ -5,6 +5,11 @@ terraform {
       version = "~> 2.0"
     }
 
+    mongodbatlas = {
+      source  = "mongodb/mongodbatlas"
+      version = "~> 1.20"
+    }
+
     helm = {
       source  = "hashicorp/helm"
       version = "2.5.1"
