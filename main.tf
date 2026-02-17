@@ -51,3 +51,23 @@ module "kubernetes" {
   cluster_issuer_email = var.cluster_issuer_email
   cluster_issuer_name  = "letsencrypt-prod"
 }
+
+module "atlas_mongodb" {
+  count  = var.atlas_enabled ? 1 : 0
+  source = "./modules/mongodb-atlas"
+
+  atlas_org_id                 = var.atlas_org_id
+  atlas_public_key             = var.atlas_public_key
+  atlas_private_key            = var.atlas_private_key
+  atlas_project_name           = var.atlas_project_name
+  atlas_cluster_name           = var.atlas_cluster_name
+  atlas_provider_name          = var.atlas_provider_name
+  atlas_backing_provider_name  = var.atlas_backing_provider_name
+  atlas_region                 = var.atlas_region
+  atlas_instance_size_name     = var.atlas_instance_size_name
+  atlas_mongodb_major_version  = var.atlas_mongodb_major_version
+  atlas_database_name          = var.atlas_database_name
+  atlas_database_username      = var.atlas_database_username
+  atlas_database_user_password = var.atlas_database_user_password
+  atlas_access_list_cidrs      = var.atlas_access_list_cidrs
+}
