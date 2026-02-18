@@ -24,7 +24,7 @@ resource "helm_release" "cert_manager" {
 resource "kubectl_manifest" "cluster_issuer" {
   depends_on      = [helm_release.cert_manager]
   validate_schema = false
-  yaml_body       = templatefile("${path.module}/specs/cert-manager-issuer-values.yaml", {
+  yaml_body = templatefile("${path.module}/specs/cert-manager-issuer-values.yaml", {
     cluster_issuer_name  = var.cluster_issuer_name
     cluster_issuer_email = var.cluster_issuer_email
   })

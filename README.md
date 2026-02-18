@@ -18,3 +18,34 @@ This project is a template for setting up Kubernetes cluster on DigitalOcean.
 ```bash
 terraform refresh -target=module.digital_ocean.digitalocean_kubernetes_cluster.do_cluster
 ```
+
+## MongoDB Atlas Automation
+
+This template can optionally provision MongoDB Atlas resources through Terraform.
+
+- Create Atlas project
+- Create Atlas free/shared cluster (defaults to `M0`)
+- Create application database user
+- Create IP access list entries
+- Output full connection URI with credentials for Doppler
+
+Set these variables and enable Atlas provisioning:
+
+```hcl
+atlas_enabled     = true
+atlas_org_id      = "YOUR_ATLAS_ORG_ID"
+atlas_public_key  = "YOUR_ATLAS_PUBLIC_KEY"
+atlas_private_key = "YOUR_ATLAS_PRIVATE_KEY"
+```
+
+Optional defaults:
+
+```hcl
+atlas_project_name       = "platform-apps"
+atlas_cluster_name       = "Cluster0"
+atlas_instance_size_name = "M0"
+atlas_region             = "AP_SOUTH_1"
+atlas_access_list_cidrs  = ["0.0.0.0/0"]
+```
+
+After apply, use `terraform output atlas_connection_uri` (sensitive) and add it to Doppler for app env vars.
