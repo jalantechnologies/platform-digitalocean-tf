@@ -61,12 +61,12 @@ module "atlas_mongodb" {
   count  = var.atlas_enabled ? 1 : 0
   source = "./modules/mongodb-atlas"
 
-  atlas_org_id                = var.atlas_org_id
-  atlas_project_name          = var.atlas_project_name
-  atlas_cluster_name          = var.atlas_cluster_name
-  atlas_provider_name         = var.atlas_provider_name
-  atlas_backing_provider_name = var.atlas_backing_provider_name
-  atlas_region                = var.atlas_region
+  atlas_org_id                 = var.atlas_org_id
+  atlas_project_name           = var.atlas_project_name
+  atlas_cluster_name           = var.atlas_cluster_name
+  atlas_provider_name          = var.atlas_provider_name
+  atlas_backing_provider_name  = var.atlas_backing_provider_name
+  atlas_region                 = var.atlas_region
   atlas_instance_size_name     = var.atlas_instance_size_name
   atlas_mongodb_major_version  = var.atlas_mongodb_major_version
   atlas_database_name          = var.atlas_database_name
