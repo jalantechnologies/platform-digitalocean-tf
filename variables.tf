@@ -2,6 +2,18 @@ variable "cluster_issuer_email" {
   description = "Email address used for ACME registration for Kubernetes CertManager service"
 }
 
+variable "enable_preview_pool" {
+  description = "Terraform Cloud preview pool setting (organization-level)"
+  type        = bool
+  default     = false
+}
+
+variable "preview_node_size" {
+  description = "Terraform Cloud preview node size (organization-level)"
+  type        = string
+  default     = ""
+}
+
 variable "do_cluster_name" {
   description = "Kubernetes cluster name on DigitalOcean"
 }
