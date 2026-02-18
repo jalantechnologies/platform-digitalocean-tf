@@ -67,10 +67,10 @@ module "atlas_mongodb" {
   atlas_provider_name         = var.atlas_provider_name
   atlas_backing_provider_name = var.atlas_backing_provider_name
   atlas_region                = var.atlas_region
-  atlas_instance_size_name    = var.atlas_instance_size_name
-  atlas_mongodb_major_version = var.atlas_mongodb_major_version
-  atlas_database_name         = var.atlas_database_name
-  atlas_database_username     = var.atlas_database_username
+  atlas_instance_size_name     = var.atlas_instance_size_name
+  atlas_mongodb_major_version  = var.atlas_mongodb_major_version
+  atlas_database_name          = var.atlas_database_name
+  atlas_database_username      = var.atlas_database_username
   atlas_database_user_password = var.atlas_database_user_password
   atlas_access_list_cidrs      = var.atlas_access_list_cidrs
 }

@@ -27,7 +27,7 @@ This template can optionally provision MongoDB Atlas resources through Terraform
 - Create Atlas free/shared cluster (defaults to `M0`)
 - Create application database user
 - Create IP access list entries
-- Output connection string for Doppler or app env vars
+- Output full connection URI with credentials for Doppler
 
 Set these variables and enable Atlas provisioning:
 
@@ -42,13 +42,10 @@ Optional defaults:
 
 ```hcl
 atlas_project_name       = "platform-apps"
-atlas_cluster_name       = "shared-free-cluster"
+atlas_cluster_name       = "Cluster0"
 atlas_instance_size_name = "M0"
-atlas_region             = "US_EAST_1"
+atlas_region             = "AP_SOUTH_1"
 atlas_access_list_cidrs  = ["0.0.0.0/0"]
 ```
 
-Sensitive outputs:
-
-- `atlas_connection_uri`
-- `atlas_database_user_password`
+After apply, use `terraform output atlas_connection_uri` (sensitive) and add it to Doppler for app env vars.

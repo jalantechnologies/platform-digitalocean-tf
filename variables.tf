@@ -54,7 +54,7 @@ variable "atlas_project_name" {
 variable "atlas_cluster_name" {
   description = "MongoDB Atlas cluster name"
   type        = string
-  default     = "shared-free-cluster"
+  default     = "Cluster0"
 }
 
 variable "atlas_provider_name" {
@@ -72,7 +72,7 @@ variable "atlas_backing_provider_name" {
 variable "atlas_region" {
   description = "MongoDB Atlas region for the cluster"
   type        = string
-  default     = "US_EAST_1"
+  default     = "AP_SOUTH_1"
 }
 
 variable "atlas_instance_size_name" {

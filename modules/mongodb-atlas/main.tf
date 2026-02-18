@@ -11,7 +11,7 @@ resource "mongodbatlas_cluster" "this" {
   backing_provider_name       = var.atlas_backing_provider_name
   provider_region_name        = var.atlas_region
   provider_instance_size_name = var.atlas_instance_size_name
-  mongodb_major_version       = var.atlas_mongodb_major_version
+  mongo_db_major_version      = var.atlas_mongodb_major_version
 }
 
 resource "random_password" "atlas_database_user_password" {
